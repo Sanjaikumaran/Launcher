@@ -2,13 +2,12 @@ const express = require("express");
 const http = require("http");
 const WebSocket = require("ws");
 const os = require("os");
+const { exec } = require("child_process");
+const path = require("path");
 
 const app = express();
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
-
-// Serve the HTML files
-app.use(express.static(__dirname));
 
 // Generate a unique ID for each client
 let clientIdCounter = 1;
@@ -33,7 +32,17 @@ function getLocalIP() {
 }
 
 const localIP = getLocalIP();
-console.log(`Server is running at http://${localIP}:8000`);
+const port = 8000;
+const url = `http://${localIP}:${port}/video.html`;
+
+console.log(`Server is running at ${url}`);
+
+app.get("/config", (req, res) => {
+  res.json({ localIP, port });
+});
+
+// Serve the HTML files
+app.use(express.static(__dirname));
 
 wss.on("connection", (ws, req) => {
   // Assign a unique ID to the new client
@@ -60,6 +69,15 @@ wss.on("connection", (ws, req) => {
   });
 });
 
-server.listen(8000, () => {
+server.listen(port, () => {
   console.log("Server is listening on port 8000");
+  // Open the browser with the specified URL
+  const platform = process.platform;
+  if (platform === "win32") {
+    exec(`start ${url}`); // For Windows
+  } else if (platform === "darwin") {
+    exec(`open ${url}`); // For macOS
+  } else {
+    exec(`xdg-open ${url}`); // For Linux
+  }
 });
