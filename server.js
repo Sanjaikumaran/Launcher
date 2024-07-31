@@ -3,7 +3,6 @@ const http = require("http");
 const WebSocket = require("ws");
 const os = require("os");
 const { exec } = require("child_process");
-const path = require("path");
 
 const app = express();
 const server = http.createServer(app);
@@ -12,33 +11,28 @@ const wss = new WebSocket.Server({ server });
 // Generate a unique ID for each client
 let clientIdCounter = 1;
 
-// Function to get local IP address
-function getLocalIP() {
+// Function to get all local IP addresses
+function getLocalIPs() {
   const networkInterfaces = os.networkInterfaces();
-  let localIP = "Not found";
+  let localIPs = [];
 
   for (const iface in networkInterfaces) {
     const ifaceDetails = networkInterfaces[iface];
     for (const detail of ifaceDetails) {
       if (detail.family === "IPv4" && !detail.internal) {
-        localIP = detail.address;
-        break;
+        localIPs.push({ interface: iface, address: detail.address });
       }
     }
-    if (localIP !== "Not found") break;
   }
 
-  return localIP;
+  return localIPs;
 }
 
-const localIP = getLocalIP();
+const localIPs = getLocalIPs();
 const port = 8000;
-const url = `http://${localIP}:${port}/video.html`;
-
-console.log(`Server is running at ${url}`);
 
 app.get("/config", (req, res) => {
-  res.json({ localIP, port });
+  res.json({ localIPs, port });
 });
 
 // Serve the HTML files
@@ -51,11 +45,10 @@ wss.on("connection", (ws, req) => {
   // Get the IP address of the client
   const ip = req.socket.remoteAddress;
 
-  console.log(`New client connected: ID=${ws.id}, IP=${ip}`);
+  // Send the local IPs to the client
+  ws.send(JSON.stringify(localIPs));
 
   ws.on("message", (message) => {
-    console.log(`Received from client ID=${ws.id}, IP=${ip}:`, message);
-
     // Broadcast the message to all other connected clients
     wss.clients.forEach((client) => {
       if (client !== ws && client.readyState === WebSocket.OPEN) {
@@ -63,21 +56,19 @@ wss.on("connection", (ws, req) => {
       }
     });
   });
-
-  ws.on("close", () => {
-    console.log(`Client disconnected: ID=${ws.id}, IP=${ip}`);
-  });
 });
 
 server.listen(port, () => {
-  console.log("Server is listening on port 8000");
-  // Open the browser with the specified URL
   const platform = process.platform;
-  if (platform === "win32") {
-    exec(`start ${url}`); // For Windows
-  } else if (platform === "darwin") {
-    exec(`open ${url}`); // For macOS
-  } else {
-    exec(`xdg-open ${url}`); // For Linux
+  const lastIP = localIPs[localIPs.length - 1].address;
+  if (lastIP) {
+    const url = `http://${lastIP}:${port}/video.html`;
+    if (platform === "win32") {
+      exec(`powershell -NoProfile -Command "Start-Process '${url}'"`); // For Windows
+    } else if (platform === "darwin") {
+      exec(`open ${url}`); // For macOS
+    } else {
+      exec(`xdg-open ${url}`); // For Linux
+    }
   }
 });

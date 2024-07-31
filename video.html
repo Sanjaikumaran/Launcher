@@ -27,6 +27,21 @@
         const socket = new WebSocket('ws://' + location.hostname + ':8000');
         const video = document.getElementById('video');
         const videoSource = document.getElementById('videoSource');
+        let urls;
+
+        socket.onopen = () => {
+            console.log('WebSocket connection opened');
+        };
+
+        socket.onmessage = (event) => {
+            // Log the received message
+            const message = JSON.parse(event.data);
+            console.log("Received message:", message);
+
+            // Display IP addresses in an alert
+            urls = message.map(ip => `http://${ip.address}:8000`).join('\n');
+            //alert(`Available URLs:\n${urls}`);
+        };
 
         function enterFullscreen() {
             if (video.requestFullscreen) {
@@ -39,23 +54,6 @@
                 video.msRequestFullscreen();
             }
         }
-        socket.onmessage = (event) => {
-            // Log the received message
-            const message = event.data;
-            console.log("Received message:", message);
-
-            if (message.size === 4) {
-                console.log("EMBS");
-                videoSource.src = "video1.mp4"; // Change to the appropriate video source
-            } else if (message.size === 5) {
-                console.log("Sight");
-                videoSource.src = "video2.mp4"; // Change to the appropriate video source
-            }
-
-            // Load the new video source and play the video
-            video.load();
-            video.play();
-        };
 
         document.addEventListener('keydown', function (event) {
             // Check if the pressed key is the Spacebar (key code 32)
@@ -82,11 +80,8 @@
 
         // Function to show alert with local IP and port
         function showAlert() {
-            alert(`Local IP: ${localIP}\nPort: ${port}`);
+            alert(urls);
         }
-
-        // Event listener for button click
-        //document.getElementById('showIpPortBtn').addEventListener('click', showAlert);
 
         // Event listener for Ctrl + P keyboard shortcut
         document.addEventListener('keydown', (event) => {
