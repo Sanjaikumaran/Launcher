@@ -45,9 +45,6 @@ wss.on("connection", (ws, req) => {
   // Get the IP address of the client
   const ip = req.socket.remoteAddress;
 
-  // Send the local IPs to the client
-  ws.send(JSON.stringify(localIPs));
-
   ws.on("message", (message) => {
     // Broadcast the message to all other connected clients
     wss.clients.forEach((client) => {
