@@ -1,0 +1,72 @@
+<!doctype html>
+<html>
+
+<head>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+        }
+
+        video {
+            width: 100vw;
+            height: 100vh;
+            object-fit: cover;
+            controls: none;
+        }
+    </style>
+</head>
+
+<body>
+    <video id="video" muted>
+        <source id="videoSource" src="video.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
+    <script>
+        const socket = new WebSocket('ws://' + location.hostname + ':8000');
+        const video = document.getElementById('video');
+        const videoSource = document.getElementById('videoSource');
+
+        function enterFullscreen() {
+            if (video.requestFullscreen) {
+                video.requestFullscreen();
+            } else if (video.mozRequestFullScreen) { // Firefox
+                video.mozRequestFullScreen();
+            } else if (video.webkitRequestFullscreen) { // Chrome, Safari, and Opera
+                video.webkitRequestFullscreen();
+            } else if (video.msRequestFullscreen) { // IE/Edge
+                video.msRequestFullscreen();
+            }
+        }
+        socket.onmessage = (event) => {
+            // Log the received message
+            const message = event.data;
+            console.log("Received message:", message);
+
+            if (message.size === 4) {
+                console.log("EMBS");
+                videoSource.src = "video1.mp4"; // Change to the appropriate video source
+            } else if (message.size === 5) {
+                console.log("Sight");
+                videoSource.src = "video2.mp4"; // Change to the appropriate video source
+            }
+
+            // Load the new video source and play the video
+            video.load();
+
+            video.play()
+        };
+        document.addEventListener('keydown', function (event) {
+            // Check if the pressed key is the Spacebar (key code 32)
+            if (event.code === 'Space') {
+                event.preventDefault(); // Prevent default spacebar behavior (scrolling)
+                // Toggle mute state
+                video.muted = null;
+                //enterFullscreen()
+
+            }
+        });
+    </script>
+</body>
+
+</html>
