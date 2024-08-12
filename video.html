@@ -17,31 +17,34 @@
 </head>
 
 <body>
-    <video id="video" muted>
-        <source id="videoSource" src="video.mp4" type="video/mp4">
-        Your browser does not support the video tag.
-    </video>
+    <div class="Vcontainer">
+        <video id="video" muted>
+            <source id="videoSource" src="video.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+        </video></div>
 
     <script>
         const socket = new WebSocket('ws://' + location.hostname + ':8000');
         const video = document.getElementById('video');
+        //video.pause()
         const videoSource = document.getElementById('videoSource');
         let urls = '';
 
 
         socket.onmessage = (event) => {
-            //const message = JSON.parse(event.data);
-            //console.log("Received message:", event);
-            // Handle other messages to change the video source
-            if (event.data.size === 4) {
-                videoSource.src = "video1.mp4"; // Change to the appropriate video source
-            } else if (event.data.size === 5) {
-                videoSource.src = "video2.mp4"; // Change to the appropriate video source
+            console.log(event);
+
+            if (event.data instanceof Blob) {
+                event.data.text().then(text => {
+                    console.log('Text from Blob:', text); // Log the text content from the Blob
+                    if (text == "Launch") {
+                        video.load();
+                        video.play();
+                    }
+                })
             }
 
-            // Load the new video source and play the video
-            video.load();
-            video.play();
+
         };
 
         document.addEventListener('keydown', function (event) {

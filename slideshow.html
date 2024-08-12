@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic Slideshow</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            color: #fff;
+            overflow: hidden;
+            background-color: #000;
+        }
+
+        .container {
+            width: 100%;
+            height: 100vh;
+            background-image: url('assets/bg.jpg');
+            background-size: 100% 50%;
+            background-position: top right;
+            background-repeat: repeat;
+            position: relative;
+        }
+
+        .controls {
+            display: none;
+
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                display: none;
+                background-size: cover;
+                background-position: top;
+                height: 35vh;
+                padding-top: 0;
+            }
+
+            .controls {
+                display: none;
+
+                position: absolute;
+                width: 100%;
+                bottom: 20px;
+                text-align: center;
+            }
+
+            .mobile-controls {
+                position: absolute;
+                bottom: 80px;
+                width: 100%;
+                text-align: center;
+                display: flex;
+                justify-content: center;
+                gap: 10px;
+            }
+
+            .mobile-controls button {
+                padding: 10px 20px;
+                background-color: rgba(0, 0, 0, 0.5);
+                color: white;
+                font-size: 16px;
+                border: none;
+                border-radius: 5px;
+                cursor: pointer;
+                transition: background-color 0.3s ease;
+            }
+
+            .mobile-controls button:hover {
+                background-color: rgba(0, 0, 0, 0.8);
+            }
+        }
+
+        .slideshow-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        .slide {
+            display: block;
+            text-align: center;
+            height: 100%;
+            width: 100%;
+            position: absolute;
+            opacity: 0;
+            transition: opacity 1s ease-in-out;
+        }
+
+        .slide img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .fade-in {
+            animation: fadeIn 1s forwards;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        .slide-in {
+            animation: slideIn 1s forwards;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .zoom-in {
+            animation: zoomIn 1s forwards;
+        }
+
+        @keyframes zoomIn {
+            from {
+                transform: scale(1.5);
+                opacity: 0;
+            }
+
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .rotate-in {
+            animation: rotateIn 1s forwards;
+        }
+
+        @keyframes rotateIn {
+            from {
+                transform: rotate(45deg);
+                opacity: 0;
+            }
+
+            to {
+                transform: rotate(0deg);
+                opacity: 1;
+            }
+        }
+
+        .flip-in {
+            animation: flipIn 1s forwards;
+        }
+
+        @keyframes flipIn {
+            from {
+                transform: rotateY(-90deg);
+                opacity: 0;
+            }
+
+            to {
+                transform: rotateY(0);
+                opacity: 1;
+            }
+        }
+
+        .bounce-in {
+            animation: bounceIn 1s forwards;
+        }
+
+        @keyframes bounceIn {
+            from {
+                transform: scale(0);
+                opacity: 0;
+            }
+
+            60% {
+                transform: scale(1.1);
+                opacity: 1;
+            }
+
+            80% {
+                transform: scale(0.9);
+            }
+
+            to {
+                transform: scale(1);
+            }
+        }
+
+        .flip-x-in {
+            animation: flipXIn 1s forwards;
+        }
+
+        @keyframes flipXIn {
+            from {
+                transform: rotateX(-90deg);
+                opacity: 0;
+            }
+
+            to {
+                transform: rotateX(0);
+                opacity: 1;
+            }
+        }
+
+        .flip-y-in {
+            animation: flipYIn 1s forwards;
+        }
+
+        @keyframes flipYIn {
+            from {
+                transform: rotateY(-90deg);
+                opacity: 0;
+            }
+
+            to {
+                transform: rotateY(0);
+                opacity: 1;
+            }
+        }
+
+        .fade-slide-in {
+            animation: fadeSlideIn 1s forwards;
+        }
+
+        @keyframes fadeSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .toast {
+            font-size: xx-large;
+            font-weight: bolder;
+            position: absolute;
+            bottom: 8px;
+            height: auto;
+            left: 40%;
+            box-shadow: 0px 20px 30px -10px rgba(3, 102, 207, 0.5);
+            color: #fff;
+            padding: 10px 20px;
+            width: auto;
+            transform: skew(-35deg, 0deg);
+            border: 5px solid #fff;
+            border-bottom: none;
+            border-right-width: 6px;
+            border-left: none;
+            min-width: 400px;
+            border-radius: 10px;
+            background: rgb(80, 75, 171);
+            background: linear-gradient(52deg, rgba(80, 75, 171, 1) 0%, rgba(7, 7, 247, 0.8435749299719888) 32%, rgba(9, 26, 121, 0.7455357142857143) 57%, rgba(79, 30, 214, 1) 100%);
+            opacity: 0;
+            transition: opacity 1s ease-in-out;
+        }
+
+        .toast-wrapper {
+            transform: skew(35deg, 0deg);
+        }
+
+        .text {
+            display: block;
+            transform: none;
+        }
+
+        /*.mobile-controls {
+            display: none;
+        }*/
+
+        .Vcontainer {
+            display: none;
+        }
+
+        video {
+            width: 100vw;
+            height: 100vh;
+            object-fit: cover;
+        }
+
+        .prev,
+        .next {
+
+            cursor: pointer;
+            padding: 16px;
+            margin: 10px;
+            background-color: rgba(0, 0, 0, 0.5);
+            color: white;
+            font-size: 18px;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+
+        .prev:hover,
+        .next:hover {
+            background-color: rgba(0, 0, 0, 0.8);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="sContainer">
+        <div class="container">
+            <div class="slideshow-container">
+                <div class="slide fade-in">
+                    <img id="slideshow-image" src="" alt="Slideshow Image">
+                    <div id="folder-toast" class="toast">
+                        <div class="toast-wrapper">
+                            <span class="text">Your Toast Message Here</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="controls">
+            <span class="prev" onclick="changeSlide(-1)">&#10094;</span>
+            <span class="next" onclick="changeSlide(1)">&#10095;</span>
+        </div>
+        <div class="mobile-controls">
+            <button class="play" onclick="sendControl('play')">Play</button>
+            <button class="pause" onclick="sendControl('pause')">Pause</button>
+            <button class="prev" onclick="sendControl('prev')">&#10094;</button>
+            <button calss="next" onclick="sendControl('next')">&#10095;</button>
+        </div>
+    </div>
+    <div class="Vcontainer">
+        <video id="video" muted>
+            <source id="videoSource" src="video.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+        </video></div>
+
+    <script>
+        const socket = new WebSocket('ws://' + location.hostname + ':8000');
+        const video = document.getElementById('video');
+        //video.pause()
+        const videoSource = document.getElementById('videoSource');
+        let urls = '';
+
+
+        socket.onmessage = (event) => {
+            console.log(event);
+
+            if (event.data instanceof Blob) {
+                event.data.text().then(text => {
+                    console.log('Text from Blob:', text); // Log the text content from the Blob
+                    if (text == "Launch") {
+                        document.getElementsByClassName("sContainer")[0].style.display = "none";
+                        document.getElementsByClassName("Vcontainer")[0].style.display = "block";
+                        video.load();
+                        video.play();
+                    }
+                })
+            }
+
+
+        };
+
+        document.addEventListener('keydown', function (event) {
+            // Check if the pressed key is the Spacebar (key code 32)
+            if (event.code === 'Space') {
+                event.preventDefault(); // Prevent default spacebar behavior (scrolling)
+                // Toggle mute state
+                video.muted = null;
+            }
+        });
+
+        // Fetch IP and port from the server
+        fetch('/config')
+            .then(response => response.json())
+            .then(config => {
+                urls = config.localIPs.map(ip => `http://${ip.address}:8000`).join('\n');
+            })
+            .catch(error => console.error('Error fetching config:', error));
+
+        // Function to show alert with local IPs and port
+        function showAlert() {
+            alert(`Available URLs:\n${urls}`);
+        }
+
+        // Event listener for Ctrl + P keyboard shortcut
+        document.addEventListener('keydown', (event) => {
+            if (event.ctrlKey && event.key === 'p') {
+                event.preventDefault(); // Prevent default browser print dialog
+                showAlert();
+            }
+        });
+
+        let folderImages = [];
+        let currentFolderIndex = 0;
+        let currentImageIndex = 0;
+        let slideshowInterval;
+        const animations = [
+            'fade-in', 'slide-in', 'zoom-in', 'rotate-in', 'flip-in', 'bounce-in',
+            'flip-x-in', 'flip-y-in', 'fade-slide-in'
+        ];
+        let currentAnimationIndex = 0;
+
+        // WebSocket setup
+        const ws = new WebSocket('ws://' + location.hostname + ':8000');
+
+        ws.onopen = () => {
+            console.log('WebSocket connection established');
+        };
+
+        ws.onmessage = (event) => {
+
+            if (event.data instanceof Blob) {
+                // Convert Blob to text
+                event.data.text().then(text => {
+                    try {
+                        const data = text;
+                        handleWebSocketMessage(data);
+                    } catch (e) {
+                        console.error('Failed to parse WebSocket message:', e);
+                    }
+                }).catch(err => {
+                    console.error('Failed to read Blob as text:', err);
+                });
+            } else {
+                // If it's not a Blob, assume it's already text
+                try {
+                    const data = JSON.parse(event.data);
+                    handleWebSocketMessage(data);
+                } catch (e) {
+                    console.error('Failed to parse WebSocket message:', e);
+                }
+            }
+        };
+
+        function handleWebSocketMessage(data) {
+            //document.getElementsByClassName("sContainer")[0].style.display = "block";
+            //document.getElementsByClassName("Vcontainer")[0].style.display = "none";
+            //console.log(data);
+
+            if (data === 'play') {
+                video.muted = true;
+                document.getElementsByClassName("sContainer")[0].style.display = "block";
+                document.getElementsByClassName("Vcontainer")[0].style.display = "none";
+                startSlideshow();
+            } else if (data === 'pause') {
+                video.muted = true;
+
+                document.getElementsByClassName("sContainer")[0].style.display = "block";
+                document.getElementsByClassName("Vcontainer")[0].style.display = "none";
+                clearInterval(slideshowInterval);
+            } else if (data === 'next') {
+                video.muted = true;
+
+                document.getElementsByClassName("sContainer")[0].style.display = "block";
+                document.getElementsByClassName("Vcontainer")[0].style.display = "none";
+                changeSlide(1);
+
+            } else if (data === 'prev') {
+                video.muted = true;
+
+                document.getElementsByClassName("sContainer")[0].style.display = "block";
+                document.getElementsByClassName("Vcontainer")[0].style.display = "none";
+                changeSlide(-1);
+            }
+        }
+
+
+        // Fetch folder tree from server
+        fetch("/folder-tree")
+            .then(response => response.json())
+            .then(data => {
+                folderImages = data;
+                return preloadImages();
+            })
+            .then(() => {
+                showSlide(animations[currentAnimationIndex]);
+                startSlideshow();
+            });
+
+        function preloadImages() {
+            return new Promise((resolve) => {
+                const images = [];
+                folderImages.forEach(folder => {
+                    folder.images.forEach(image => {
+                        const img = new Image();
+                        img.src = `assets/${folder.name}/${image}`;
+                        img.onload = () => {
+                            images.push(img);
+                            if (images.length === folderImages.reduce((acc, folder) => acc +
+                                    folder.images.length, 0)) {
+                                resolve();
+                            }
+                        };
+                        img.onerror = () => {
+                            console.error(`Failed to load image: ${img.src}`);
+                        };
+                    });
+                });
+            });
+        }
+
+        function showSlide(animation) {
+            const slideshowImage = document.getElementById('slideshow-image');
+            const folderToast = document.getElementById('folder-toast');
+            const textSpan = document.querySelector(".text");
+
+            const folder = folderImages[currentFolderIndex];
+            const imagePath = `assets/${folder.name}/${folder.images[currentImageIndex]}`;
+
+            slideshowImage.src = imagePath;
+            textSpan.textContent = `${folder.name}`;
+
+            slideshowImage.classList.remove(...animations);
+            slideshowImage.classList.add(animation);
+
+            slideshowImage.style.opacity = 0;
+            folderToast.style.opacity = 0;
+
+            setTimeout(() => {
+                slideshowImage.style.opacity = 1;
+                folderToast.style.opacity = 1;
+            }, 100);
+        }
+
+        function changeSlide(direction) {
+            currentImageIndex += direction;
+
+            const folder = folderImages[currentFolderIndex];
+            if (currentImageIndex >= folder.images.length) {
+                currentImageIndex = 0;
+                currentFolderIndex++;
+                if (currentFolderIndex >= folderImages.length) {
+                    currentFolderIndex = 0;
+                }
+            } else if (currentImageIndex < 0) {
+                currentImageIndex = folder.images.length - 1;
+                currentFolderIndex--;
+                if (currentFolderIndex < 0) {
+                    currentFolderIndex = folderImages.length - 1;
+                }
+            }
+
+            showSlide(animations[currentAnimationIndex]);
+
+            // Update the animation index
+            currentAnimationIndex = (currentAnimationIndex + 1) % animations.length;
+        }
+
+        function startSlideshow() {
+            slideshowInterval = setInterval(() => {
+                changeSlide(1);
+            }, 5000);
+        }
+
+        function sendControl(action) {
+            if (ws.readyState === WebSocket.OPEN) {
+                ws.send(action);
+            }
+        }
+    </script>
+</body>
+
+</html>

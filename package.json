@@ -1,21 +1,36 @@
 {
-  "name": "Launcher",
+  "name": "launcher",
   "version": "1.0.0",
-  "bin": "server.js",
+  "bin": {
+    "launcher": "server.js"
+  },
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "pkg": "pkg ."
   },
   "dependencies": {
+    "ejs": "^3.1.10",
     "express": "^4.19.2",
     "ws": "^8.18.0"
   },
   "pkg": {
     "assets": [
       "index.html",
-      "video.html",
-      "video1.mp4",
-      "video2.mp4"
-
-    ]
-  }
+      "slideshow.html"
+    ],
+    "output": "launcher"
+  },
+  "main": "server.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Sanjaikumaran/Launcher.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Sanjaikumaran/Launcher/issues"
+  },
+  "homepage": "https://github.com/Sanjaikumaran/Launcher#readme",
+  "description": "Launcher application with dynamic asset serving"
 }

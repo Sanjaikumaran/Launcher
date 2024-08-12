@@ -83,7 +83,7 @@
             padding: 10px 20px;
             color: #f0f0f0;
             border-radius: 10px;
-            display: none;
+            /* display: none; */
             /* Initially hidden */
         }
 
@@ -120,20 +120,20 @@
 </head>
 
 <body>
-    <div class="toggle-container">
+    <!-- <div class="toggle-container">
         <div class="toggle">
             <div class="option selected" id="option1">Sight</div>
             <div class="option" id="option2">EMBS</div>
         </div>
-    </div>
+    </div> -->
     <button type="button" id="launchButton">
         <h1>Launch Now</h1>
     </button>
-    <button type="button" id="fullScreen">
-        <h1>Fullscreen</h1>
-    </button>
     <button type="button" id="connect">
         <h1>Disconnected, Click to connect</h1>
+    </button>
+    <button type="button" id="fullScreen">
+        <h1>Fullscreen</h1>
     </button>
     <script>
         const socket = new WebSocket('ws://' + location.hostname + ':8000');
@@ -162,15 +162,15 @@
             console.log("Received message:", event.data);
         };
 
-        option1.addEventListener('click', () => {
-            option1.classList.add('selected');
-            option2.classList.remove('selected');
-        });
+        // option1.addEventListener('click', () => {
+        //     option1.classList.add('selected');
+        //     option2.classList.remove('selected');
+        // });
 
-        option2.addEventListener('click', () => {
-            option2.classList.add('selected');
-            option1.classList.remove('selected');
-        });
+        // option2.addEventListener('click', () => {
+        //     option2.classList.add('selected');
+        //     option1.classList.remove('selected');
+        // });
 
         function enterFullscreen() {
             if (document.documentElement.requestFullscreen) {
@@ -185,17 +185,18 @@
         }
 
         launchButton.addEventListener('click', () => {
-            const selectedOption = document.querySelector('.option.selected').innerText;
-            socket.send(selectedOption);
+            // const selectedOption = document.querySelector('.option.selected').innerText;
+            // socket.send(selectedOption);
+            socket.send("Launch")
 
             // Toggle the selected option after sending the message
-            if (selectedOption === "Sight") {
-                option1.classList.remove('selected');
-                option2.classList.add('selected');
-            } else {
-                option2.classList.remove('selected');
-                option1.classList.add('selected');
-            }
+            // if (selectedOption === "Sight") {
+            //     option1.classList.remove('selected');
+            //     option2.classList.add('selected');
+            // } else {
+            //     option2.classList.remove('selected');
+            //     option1.classList.add('selected');
+            // }
         });
 
         fullScreenButton.addEventListener('click', () => {
